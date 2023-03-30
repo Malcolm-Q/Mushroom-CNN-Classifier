@@ -56,8 +56,8 @@ def CycleImages(imgs=None,label_names=None,figsize=(20,15), rows=6, cols=5):
     while(True):
         for i, ax in enumerate(ax.flat):
             ax.imshow(imgs[i+starting_index],cmap='gray')
-            if label_names != None: ax.set_title(label_names[index])
-            else:ax.set_title(index)
+            if label_names != None: ax.set_title(label_names[starting_index])
+            else:ax.set_title(starting_index)
             ax.set_xticks([])
             ax.set_yticks([])
         plt.show()
@@ -101,3 +101,79 @@ def AvgPixelOutliers(imgs=None,threshold=100):
         elif response == 'q': break
         else: print('please enter "w", "s", "q"')
         plt.close()
+        
+def AvgPixelOutliersBalancer(imgs=None,balance_to=600):
+    scores = np.zeros(len(imgs))
+
+    avg_r = np.average(imgs[:,:,:,0])
+    avg_g = np.average(imgs[:,:,:,1])
+    avg_b = np.average(imgs[:,:,:,2])
+    avg_row = np.array([avg_r,avg_g,avg_b])
+    for i, img in enumerate(imgs):
+        r = np.average(img[:,:,0])
+        g = np.average(img[:,:,1])
+        b = np.average(img[:,:,2])
+        row = np.array([r,g,b])
+        distance = np.linalg.norm(avg_row - row)
+        scores[i] = distance
+        
+    keep = scores.argsort()[:balance_to]
+    tmp2 = imgs[keep]
+    return tmp2
+
+def AvgPixelOutliersBalancerVisualizer(imgs=None,balance_to=600):
+    scores = np.zeros(len(imgs))
+
+    avg_r = np.average(imgs[:,:,:,0])
+    avg_g = np.average(imgs[:,:,:,1])
+    avg_b = np.average(imgs[:,:,:,2])
+    avg_row = np.array([avg_r,avg_g,avg_b])
+    for i, img in enumerate(imgs):
+        r = np.average(img[:,:,0])
+        g = np.average(img[:,:,1])
+        b = np.average(img[:,:,2])
+        row = np.array([r,g,b])
+        distance = np.linalg.norm(avg_row - row)
+        scores[i] = distance
+
+    starting_index=0
+    print(len(scores))
+    remove = len(imgs) - balance_to 
+    outliers = scores.argsort()[-remove:][::-1]
+    tmp = imgs[outliers]
+    while(True):
+        clear_output()
+        fig, axs = plt.subplots(nrows=4,ncols=5,figsize=(20,10))
+        for i, ax in enumerate(axs.flat):
+            ax.imshow(tmp[i+starting_index],cmap='gray')
+            ax.set_title(str(i+starting_index))
+            ax.set_xticks([])
+            ax.set_yticks([])
+        plt.show();
+        response = input('type "w" to see more images, "q" to quit, "s" to go back')
+        if response == 'w': starting_index += 20
+        elif response == 's': starting_index -= 20
+        elif response == 'q': break
+        else: print('please enter "w", "s", "q"')
+        plt.close()
+        
+    keep = scores.argsort()[:balance_to]
+    tmp2 = imgs[keep]
+    
+    starting_index=0
+    while(True):
+        clear_output()
+        fig, axs = plt.subplots(nrows=4,ncols=5,figsize=(20,10))
+        for i, ax in enumerate(axs.flat):
+            ax.imshow(tmp2[i+starting_index],cmap='gray')
+            ax.set_title(str(i+starting_index))
+            ax.set_xticks([])
+            ax.set_yticks([])
+        plt.show();
+        response = input('type "w" to see more images, "q" to quit, "s" to go back')
+        if response == 'w': starting_index += 20
+        elif response == 's': starting_index -= 20
+        elif response == 'q': break
+        else: print('please enter "w", "s", "q"')
+        plt.close()
+    return tmp2

@@ -6,7 +6,7 @@ from collections import Counter
 import numpy as np
 from sklearn.model_selection import train_test_split
 
-def PrepData(path='./../'):
+def PrepData(path='./../',target_size=(200,200)):
     #LABELS
     df = pd.read_csv(path+'data/raw/DF20-train_metadata_PROD-2.csv')
     small_df = df[['image_path','species','Substrate']]
@@ -26,11 +26,25 @@ def PrepData(path='./../'):
         tar.extractall(path+'data/train_tar')
     print('Finished', end='\r')
         
-    image_array = np.zeros((len(small_df), 300, 300, 3), dtype=np.uint8)
+    image_array = np.zeros((len(small_df), 200, 200, 3), dtype=np.uint8)
 
     for i, image_path in enumerate(small_df.image_path.values.tolist()):
+        # later we'll bring this method of sizing into our pipeline.
         with Image.open(path+'data/train_tar/DF20_300/'+image_path) as img:
-            img = img.resize((300, 300))
+            width, height = img.size
+            if width > height:
+                left = (width - height) / 2
+                right = left + height
+                top = 0
+                bottom = height
+            elif width < height:
+                top = (height - width) / 2
+                bottom = top + width
+                left = 0
+                right = width
+            img = img.crop((left, top, right, bottom))
+
+            img = img.resize(target_size, Image.ANTIALIAS)
             img = np.array(img)
             image_array[i]=img
             print(f'Processed image #{i+1}', end='\r')
